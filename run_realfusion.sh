@@ -46,4 +46,4 @@ python main.py --O \
     --learned_embeds_path $WORKDIR/ti_out/learned_embeds.bin \
     --text "A high-resolution DSLR image of a <token>" \
     --workspace $NERF_OUTPUT_DIR \
-    --iters $ITERS
+    $OVERRIDES
