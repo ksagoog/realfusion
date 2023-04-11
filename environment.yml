@@ -1,4 +1,4 @@
-name: realfusion_sandbox
+name: realfusion
 channels:
   - pytorch
   - nvidia
@@ -155,7 +155,7 @@ dependencies:
       - contourpy==1.0.7
       - cycler==0.11.0
       - decorator==5.1.1
-      - "--editable=git+https://github.com/huggingface/diffusers@67c3518"
+      - "--editable=git+https://github.com/huggingface/diffusers@67c3518#egg=diffusers"
       - docstring-parser==0.15
       - executing==1.2.0
       - fastapi==0.95.0
