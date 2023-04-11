@@ -441,6 +441,10 @@ imagenet_style_templates_small = [
     "a large painting in the style of {}",
 ]
 
+def is_image_path(file_path):
+    valid_exts = ['jpeg','jpg','png']
+    _, ext = os.path.splitext(file_path)
+    return ext.lower().strip('.') in valid_exts
 
 class TextualInversionDataset(Dataset):
     def __init__(
@@ -464,8 +468,11 @@ class TextualInversionDataset(Dataset):
         self.placeholder_token = placeholder_token
         self.center_crop = center_crop
         self.flip_p = flip_p
-
-        self.image_paths = [os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)]
+        
+        if os.path.isdir(self.data_root):
+            self.image_paths = [os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root) if is_image_path(file_path)]
+        else:
+            self.image_paths = [self.data_root]
 
         self.num_images = len(self.image_paths)
         self._length = self.num_images

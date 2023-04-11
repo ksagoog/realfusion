@@ -20,6 +20,24 @@ from torch import Tensor
 import cv2
 from tap import Tap
 
+from rembg import session_factory, session_simple
+import onnxruntime as ort
+
+
+def get_session(u2net_path):
+    session_class = session_simple.SimpleSession
+    
+    model_name = 'u2net'
+    sess_opts = ort.SessionOptions()
+    
+    return session_class(
+        model_name,
+        ort.InferenceSession(
+            str(u2net_path),
+            providers=ort.get_available_providers(),
+            sess_options=sess_opts,
+        ),
+    ) 
 
 # Set autograd and device
 torch.set_grad_enabled(False)
@@ -29,6 +47,7 @@ device = 'cuda'
 class Args(Tap):
     image_path: str
     output_dir: str
+    u2net_path: str
     mask_path: Optional[str] = None
     size: int = 512
     overwrite: bool = False
@@ -50,7 +69,7 @@ def main(args: Args):
     # Load image and mask
     image = Image.open(args.image_path).convert('RGB')
     if args.mask_path is None:
-        rgba = get_rgba(image)
+        rgba = get_rgba(image, u2net_path=args.u2net_path)
         rgba = TVF.to_tensor(rgba).unsqueeze(0)  # (1, 4, H, W)
         image = TVF.to_tensor(image).unsqueeze(0)  # (1, 3, H, W)
         mask = rgba[:, 3:]  # (1, 1, H, W)
@@ -100,13 +119,13 @@ def expand_to_size(image: Tensor, mask: Tensor, size: int):
     return new_image, new_mask
 
 
-def get_rgba(image):
+def get_rgba(image, u2net_path):
     try:
         from rembg import remove
     except ImportError:
         print('Please install rembg with "pip install rembg"')
         sys.exit()
-    return remove(image, alpha_matting=False)
+    return remove(image, alpha_matting=False, session=get_session(u2net_path=u2net_path))
 
 
 if __name__ == "__main__":

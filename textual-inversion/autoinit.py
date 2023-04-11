@@ -17,8 +17,8 @@ from transformers import CLIPModel, CLIPProcessor
 
 torch.set_grad_enabled(False)
 
-DEFAULT_EMB_FILE = 'clip-vit-large-patch14-text-embeddings.pth'
-
+# DEFAULT_EMB_FILE = 'clip-vit-large-patch14-text-embeddings.pth'
+DEFAULT_EMB_FILE = None
 
 def get_model():
     model: CLIPModel = CLIPModel.from_pretrained("openai/clip-vit-large-patch14").eval()
@@ -77,7 +77,7 @@ def save_embeddings(file_name: str = DEFAULT_EMB_FILE, device: str = 'cuda'):
 # %%
 
 def get_initialization(image_file: str, text_emb_file: str = DEFAULT_EMB_FILE, device: str = 'cuda', 
-                       save: bool = False, save_dir: Optional[str] = None):
+                       save: bool = True, save_dir: Optional[str] = None):
 
     # Load text embeddings
     text_emb = torch.load(text_emb_file)
