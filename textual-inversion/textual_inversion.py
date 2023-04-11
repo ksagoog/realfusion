@@ -57,6 +57,7 @@ from diffusers import (
 from diffusers.optimization import get_scheduler
 from diffusers.utils import check_min_version, is_wandb_available
 from diffusers.utils.import_utils import is_xformers_available
+import functools
 
 
 if is_wandb_available():
@@ -473,6 +474,8 @@ class TextualInversionDataset(Dataset):
             self.image_paths = [os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root) if is_image_path(file_path)]
         else:
             self.image_paths = [self.data_root]
+            
+        self.images = [Image.open(p).convert('RGB') for p in self.image_paths]
 
         self.num_images = len(self.image_paths)
         self._length = self.num_images
@@ -518,8 +521,8 @@ class TextualInversionDataset(Dataset):
 
     def __getitem__(self, i):
         example = {}
-        image = Image.open(self.image_paths[i % self.num_images])
-
+        image = self.images[i % self.num_images]
+        
         if not image.mode == "RGB":
             image = image.convert("RGB")
 
