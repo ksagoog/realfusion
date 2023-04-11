@@ -13,7 +13,10 @@ python scripts/extract-mask.py --image_path $LOCAL_IMAGE_PATH --output_dir $WORK
 # --------------- TEXTUAL INVERSION ---------------------
 cd textual-inversion
 
-python autoinit.py get_initialization $LOCAL_IMAGE_PATH --text_emb_file $TEXT_EMB_FILE
+python autoinit.py get_initialization $LOCAL_IMAGE_PATH \
+--text_emb_file $TEXT_EMB_FILE \
+--model_path $CLIP_MODEL_PATH \
+--processor_path $CLIP_PROCESSOR_PATH
 
 INITIALIZER_TOKEN=$(eval '(cat ${WORKDIR}/token_autoinit.txt)')
 

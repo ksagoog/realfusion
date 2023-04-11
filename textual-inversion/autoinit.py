@@ -20,9 +20,12 @@ torch.set_grad_enabled(False)
 # DEFAULT_EMB_FILE = 'clip-vit-large-patch14-text-embeddings.pth'
 DEFAULT_EMB_FILE = None
 
-def get_model():
-    model: CLIPModel = CLIPModel.from_pretrained("openai/clip-vit-large-patch14").eval()
-    processor: CLIPProcessor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+MODEL_PATH = "openai/clip-vit-large-patch14"
+PROCESSOR_PATH = "openai/clip-vit-large-patch14"
+
+def get_model(model_path, processor_path):
+    model: CLIPModel = CLIPModel.from_pretrained(model_path).eval()
+    processor: CLIPProcessor = CLIPProcessor.from_pretrained(processor_path)
     return model, processor
 
 
@@ -77,7 +80,10 @@ def save_embeddings(file_name: str = DEFAULT_EMB_FILE, device: str = 'cuda'):
 # %%
 
 def get_initialization(image_file: str, text_emb_file: str = DEFAULT_EMB_FILE, device: str = 'cuda', 
-                       save: bool = True, save_dir: Optional[str] = None):
+                       save: bool = True, save_dir: Optional[str] = None,
+                      model_path: str = MODEL_PATH,
+                      processor_path: str = PROCESSOR_PATH,
+                      ):
 
     # Load text embeddings
     text_emb = torch.load(text_emb_file)
@@ -85,7 +91,7 @@ def get_initialization(image_file: str, text_emb_file: str = DEFAULT_EMB_FILE, d
     all_noun_emb = text_emb['emb']
 
     # Get model
-    model, processor = get_model()
+    model, processor = get_model(model_path, processor_path)
     model.to(device)
 
     # Load and process
