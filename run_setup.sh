@@ -1,4 +1,3 @@
-IMAGE_PATH=/home/jupyter/out/image.png
 # Assume these are set
 TIME=$(eval 'date +%s')
 WORKDIR=/home/jupyter/realfusion/experiments/${TIME}

@@ -18,3 +18,9 @@ imageio-ffmpeg
 accelerate
 tensorboard
 typed-argument-parser
+trimesh
+PyMCubes
+lovely-tensors
+git+https://github.com/huggingface/diffusers@67c3518#egg=diffusers
+fire
+rembg
