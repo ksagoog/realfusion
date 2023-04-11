@@ -42,6 +42,7 @@ cd ..
 # --------------- RECONSTRUCTION ---------------------
 python main.py --O \
     --image_path $WORKDIR/rgba.png \
+    --pretrained_model_name_or_path $SD_PATH \
     --learned_embeds_path $WORKDIR/ti_out/learned_embeds.bin \
     --text "A high-resolution DSLR image of a <token>" \
     --workspace $NERF_OUTPUT_DIR \
