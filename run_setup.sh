@@ -16,4 +16,4 @@ TI_STEPS=1
 # TI_STEPS=3000
 ITERS=10
 # ITERS=5000
-OVERRIDES='--iters 20'
+OVERRIDES='--iters 20 --HW_synthetic 256 --HW_real 256 --HW_vis 256'
