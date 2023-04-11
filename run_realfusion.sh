@@ -1,24 +1,5 @@
 #!/bin/bash
 
-# IMAGE_PATH=/home/jupyter/out/image.png
-IMAGE_PATH=/home/jupyter/cars/n04285008_10740.JPEG
-
-U2NET_PATH="/home/jupyter/realfusion/u2net.onnx"
-SD_PATH="/home/jupyter/stable-diffusion-v1-5"
-TEXT_EMB_FILE="/home/jupyter/realfusion/textual-inversion/clip-vit-large-patch14-text-embeddings.pth"
-# SD_PATH="runwayml/stable-diffusion-v1-5"
-
-TIME=$(eval 'date +%s')
-WORKDIR=/home/jupyter/realfusion/experiments/${TIME}
-mkdir -p $WORKDIR
-
-
-# --------------- HPARAMS ---------------------
-TI_STEPS=1
-# TI_STEPS=3000
-ITERS=10
-# ITERS=5000
-
 # --------------- SETUP ---------------------
 cp $IMAGE_PATH $WORKDIR/image.png
 LOCAL_IMAGE_PATH=$WORKDIR/image.png
@@ -27,8 +8,7 @@ TI_OUTPUT_DIR=$WORKDIR/ti_out
 NERF_OUTPUT_DIR=$WORKDIR/nerf_out
 
 # --------------- GET ALPHA MASK ---------------------
-python scripts/extract-mask.py \
---image_path $LOCAL_IMAGE_PATH --output_dir $WORKDIR --overwrite --u2net_path $U2NET_PATH
+python scripts/extract-mask.py --image_path $LOCAL_IMAGE_PATH --output_dir $WORKDIR --overwrite --u2net_path $U2NET_PATH
 
 # --------------- TEXTUAL INVERSION ---------------------
 cd textual-inversion
