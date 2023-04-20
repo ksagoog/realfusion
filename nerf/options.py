@@ -40,6 +40,7 @@ class Options(Tap):
 
     # Real dataset
     image_path: Optional[str] = './examples/natural-images/fish_real_nemo/rgba.png'  # path to real RGBA image for reconstruction
+    idepth_path: str = ''
 
     # Synthetic dataset
     uniform_sphere_rate: float = 0.5  # likelihood of sampling camera location uniformly on the sphere surface area
@@ -74,11 +75,15 @@ class Options(Tap):
     albedo_iters: int = 1000  # training iters that only use albedo shading
     num_rays: int = 4096  # (real data only) num rays sampled per image for each training step
 
+    lambda_depth: float = 1.0
+
     # Render sizes
     # note: at some point HW_real should replace --downsample for blender images
     HW_synthetic: int = 96  # render size for synthetic images
     HW_real: int = 128  # render size for real image, for image_only dataset
     HW_vis: int = 128  # render size for visualization (i.e. val, test)
+    
+    image_loss_no_opacity: bool = False
     
     # Model
     backbone: Literal['grid'] = 'grid'  # nerf backbone

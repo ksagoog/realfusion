@@ -8,9 +8,15 @@ TI_OUTPUT_DIR=$WORKDIR/ti_out
 NERF_OUTPUT_DIR=$WORKDIR/nerf_out
 
 # --------------- GET ALPHA MASK ---------------------
-python scripts/extract-mask.py --image_path $LOCAL_IMAGE_PATH --output_dir $WORKDIR --overwrite --u2net_path $U2NET_PATH
+python scripts/extract-mask-and-depth.py \
+--image_path $LOCAL_IMAGE_PATH \
+--output_dir $WORKDIR \
+--overwrite \
+--u2net_path $U2NET_PATH \
+--midas_repo_path $MIDAS_REPO_PATH \
+--midas_weights_path $MIDAS_WEIGHTS_PATH
 
-# --------------- TEXTUAL INVERSION ---------------------
+# # --------------- TEXTUAL INVERSION ---------------------
 cd textual-inversion
 
 python autoinit.py get_initialization $LOCAL_IMAGE_PATH \
@@ -42,6 +48,7 @@ cd ..
 # --------------- RECONSTRUCTION ---------------------
 python main.py --O \
     --image_path $WORKDIR/rgba.png \
+    --idepth_path $WORKDIR/idepth.npy \
     --pretrained_model_name_or_path $SD_PATH \
     --learned_embeds_path $WORKDIR/ti_out/learned_embeds.bin \
     --text "A high-resolution DSLR image of a <token>" \

@@ -214,6 +214,14 @@ class NeRFDataset:
         
         else:
             self.image = None
+            
+        idepth_arr = np.load(self.opt.idepth_path)
+        depth_arr = 1./np.maximum(1e-5, idepth_arr)
+        depth_arr = depth_arr / np.median(depth_arr) * self.circle_radius
+        depth_arr = torch.from_numpy(depth_arr[None]).to(self.device)
+        self.depth_arr = F.interpolate(depth_arr[:, None], size=(H, W), mode='bilinear')[:, 0]
+        assert self.depth_arr.shape == (1, H, W), (self.depth_arr.shape, (1, H, W))
+        
 
     def collate(self, index):
 
@@ -245,9 +253,12 @@ class NeRFDataset:
 
         if self.image is not None:
             data['image_full_size'] = image = self.image
+            depth = self.depth_arr
             if self.training:
                 image = torch.gather(image.view(B, -1, self.C), 1, torch.stack(self.C * [rays['inds']], -1))  # [B, N, C], C=4
+                depth = torch.gather(depth.view(B, -1), 1, rays['inds'])
             data['images'] = image
+            data['depth'] = depth
 
         return data
 

@@ -426,6 +426,7 @@ class NeRFRenderer(nn.Module):
         image = image + (1 - weights_sum).unsqueeze(-1) * bg_color
         image = image.view(*prefix, self.C)
 
+        metric_depth = depth
         depth = torch.clamp(depth - nears, min=0) / (fars - nears)
         depth = depth.view(*prefix)
 
@@ -435,6 +436,7 @@ class NeRFRenderer(nn.Module):
 
         results['image'] = image
         results['depth'] = depth
+        results['metric_depth'] = metric_depth
         results['weights_sum'] = weights_sum
         results['mask'] = mask
         results['normals'] = image_normals if normals is not None else None

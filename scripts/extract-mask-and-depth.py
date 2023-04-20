@@ -43,15 +43,66 @@ def get_session(u2net_path):
 torch.set_grad_enabled(False)
 device = 'cuda'
 
+def get_depth(midas_repo_path, midas_weights_path, image):
+    # image is [h,w,3] in [0, 255]
+    assert image.dtype == np.uint8
+    device = (
+        torch.device("cuda")
+        if torch.cuda.is_available()
+        else torch.device("cpu"))
+    
+    
+    midas = torch.hub.load(
+        repo_or_dir=midas_repo_path,
+        model='DPT_BEiT_L_512',
+        source='local',
+        force_reload=True,
+        pretrained=False,
+    )
+    midas.load_state_dict(torch.load(midas_weights_path))
+    midas = midas.to(device).eval()
+    
+    transforms = torch.hub.load(
+        repo_or_dir=midas_repo_path,
+        model='transforms',
+        source='local',
+        force_reload=True,
+    )
+    transform = transforms.beit512_transform
+
+    
+    input_batch = transform(image).to(device)
+    
+    with torch.no_grad():
+        prediction = midas(input_batch)
+
+        prediction = torch.nn.functional.interpolate(
+            prediction.unsqueeze(1),
+            size=image.shape[:2],
+            mode="bicubic",
+            align_corners=False,
+        ).squeeze()
+
+    output = prediction.cpu().numpy()
+    return output
+
 
 class Args(Tap):
     image_path: str
     output_dir: str
     u2net_path: str
+    midas_repo_path: str
+    midas_weights_path: str
     mask_path: Optional[str] = None
     size: int = 512
     overwrite: bool = False
 
+def center_crop(image):
+    h,w = image.size
+    s = min(h,w)
+    oh = (h - s) // 2
+    ow = (w - s) // 2
+    return image.crop([oh,ow,oh+s, ow+s])
 
 def main(args: Args):
 
@@ -60,6 +111,7 @@ def main(args: Args):
     image_path: Path = output_dir / 'image.png'
     mask_path: Path = output_dir / 'mask.png'
     rgba_path: Path = output_dir / 'rgba.png'
+    idepth_path: Path = output_dir / 'idepth.npy'
     output_dir.mkdir(exist_ok=True, parents=True)
     if not args.overwrite:
         if image_path.is_file() or mask_path.is_file() or rgba_path.is_file():
@@ -68,6 +120,9 @@ def main(args: Args):
     
     # Load image and mask
     image = Image.open(args.image_path).convert('RGB')
+    image = center_crop(image)
+    
+    image_orig = image
     if args.mask_path is None:
         rgba = get_rgba(image, u2net_path=args.u2net_path)
         rgba = TVF.to_tensor(rgba).unsqueeze(0)  # (1, 4, H, W)
@@ -86,6 +141,11 @@ def main(args: Args):
     TVF.to_pil_image(image.squeeze(0)).save(image_path)
     TVF.to_pil_image(mask.squeeze(0)).save(mask_path)
     TVF.to_pil_image(rgba.squeeze(0)).save(rgba_path)
+    
+    idepth = get_depth(
+        args.midas_repo_path, args.midas_weights_path, np.array(image_orig))
+    with open(idepth_path, 'wb') as fp:
+        np.save(fp, idepth)
     print(f'Saved files to {output_dir}')
     
 

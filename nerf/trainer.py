@@ -314,13 +314,30 @@ class Trainer(object):
         # Losses
         loss_real_dict = {}
         if self.val(self.opt.lambda_image) > 0:
-            loss_real_image = self.val(self.opt.lambda_image) * F.mse_loss(pred_rgb * gt_opacity, gt_rgb * gt_opacity)
+            if self.opt.image_loss_no_opacity:
+                maybe_masked_pred_rgb = pred_rgb
+                maybe_masked_gt_rgb = gt_rgb
+            else:
+                maybe_masked_pred_rgb = pred_rgb * gt_opacity
+                maybe_masked_gt_rgb = gt_rgb * gt_opacity
+            
+            loss_real_image = self.val(self.opt.lambda_image) * F.mse_loss(maybe_masked_pred_rgb, maybe_masked_gt_rgb)
             loss_real_dict.update(dict(loss_real_image=loss_real_image))
+            
+            pred_disp = 1. / torch.clip(outputs['metric_depth'], min=1e-5)
+            gt_disp = 1. / torch.clip(data['depth'], min=1e-5)
+            
+            loss_depth = self.opt.lambda_depth * torch.abs(pred_disp - gt_disp).mean()
+            loss_real_dict.update(dict(loss_depth=loss_depth))
+            
         if self.val(self.opt.lambda_mask) > 0:  # mask view loss
             loss_real_mask = self.val(self.opt.lambda_mask) * F.mse_loss(pred_opacity, gt_opacity)
             loss_real_dict.update(dict(loss_real_mask=loss_real_mask))
         loss_real: Tensor = sum(loss_real_dict.values())
 
+        # import pdb
+        # pdb.set_trace()
+        
         return loss_real, loss_real_dict
 
     def visualize_train_step_real_data(self, name: Optional[str] = None):
